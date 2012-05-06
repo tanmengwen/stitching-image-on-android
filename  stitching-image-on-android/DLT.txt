@@ -1,0 +1,18 @@
+﻿thuật toán DLT là thuật toán đơn giản nhằm giải quyết vấn đề ma trận Homography đưa ra một tập hợp các điểm tương ứng.
+trong tọa độ đồng nhất, môi liên hệ giữa hai điểm x và x' có thể được viết như sau:
+c x' = H x  		(2.1)
+trong đó, c là hằng số khác 0.
+ma trận (u v 1)^T là ma trận điểm x'
+ma trận (x y 1)^T là ma trận điểm x
+H là ma trận 3x3
+Thực hiện phép chie dòng thứ nhất của biểu thức (2.1) cho dòng thứ ba và dòng thứ hai cho dòng thứ 3 ta được hai biểu thức sau:
+-h1x - h2y - h3 + (h7x + h8y + h9)u = 0 	(2.2)
+-h4x - h5y - h6 + (h7x + h8y + h9)v = 0	(2.3)
+phương trình 2.2 và 2.3 có thể viết dưới dạng ma trận như sau:
+Ai h = 0		(2.4)
+trong đó, Ai = 
+h = (h1 h2 h3 h4 h5 h6 h7 h8 h9)^T
+
+Với mỗi điểm tương ứng cung cấp cho ta hai biểu thức, 4 điểm tương ứng đủ để ta tính được 8 bậc tự do của ma trận H
+
+with a slightly different derivation than what is presented here.

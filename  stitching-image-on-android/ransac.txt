@@ -1,0 +1,79 @@
+﻿inlier: dữ liệu phù hợp với mô hình.
+outlier: dữ liệu không phù hợp với mô hình.
+Các dữ liệu còn tồn tại nhiễu.
+các outlier có thể có là do sự đánh giá sai, giả thuyết sai về sự giải thích dữ liệu
+giả định rằng với một tập các inlier(thường là nhỏ) tồn tại một thủ tục tính toán các tham số mô hình một cách tối ưu.
+
+ví dụ:
+xác định một tập hợp các điểm tạo thành đường thẳng trong tập các điểm. => giả thuyết rằng có chứa cả các điểm inlier và outlier. trong đó, inlier là các điểm
+có thể tạo thành với nhau thành một đường thẳng, còn các điểm outlier là các điểm không tạo thành một đường thằng.
+
+Thuật toán:
+input:
+	một tập các đối tượng dữ liệu, một mô hình phù hợp với dữ liệu vào.(Nghĩa là mô hình đó biểu diễn đc các dữ liệu vào)
+	một số các tham số cần thiết khác cho mỗi bài toán.
+Ý tưởng của thuật toán RANSAC là: lặp đi lặp lại việc lựa chọn ngẫu nhiên dữ liệu ban đầu. Các dữ liệu này được giả thuyết là inlier và sau đó được thử nghiệm bằng các bước sau:
+bước 1: thiết lập một mô hình từ các dữ liệu ngâu nhiên(các inlier giả thuyết) nghĩa là các tham số của mô hình đều là các inlier.
+bước 2: tất cả các dữ liệu còn lại sẽ thực hiện việc kiểm chứng mô hình. nếu một điểm phù hợp với mô hình sẽ được coi là một inlier(giả thuyết)
+bước 3: mô hình ước tính đạt yêu cầu nếu có đủ nhiều điểm là inlier(giả thuyết)
+bước 4: mô hình này sẽ được tính toán lại từ các inlier(giả thuyết), vì nó mới chỉ được ước tính từ các điểm ngẫu nhiên ban đầu.
+bước 5: mô hình được đánh giá bằng các ước tính lỗi của các inlier liên quan đến mô hình
+các bước trên được lặp đi lặp lại cho đến một số lần cố định hoặc đạt được một mô hình thích hợp.
+
+Mã giả:
+
+input:
+	data: 	một tập dữ liệu ban đầu.
+	model:	một mô hình phù hợp với data
+	n: 	số lượng dữ liệu nhỏ nhất để thiết lập nên mô hình.
+	k: 	số lần lặp lại của thuật toán.
+	t: 	một giá trị ngưỡng để xác định mốc tính toán cho mô hình(đạt đến t thì thuật toán dừng lại)
+	d: 	giá trị các điểm còn lại trong tập data đùng để kiểm chứng mô hình phù hợp với data( d = data - các điểm ngẫu nhiên )
+output:
+	best_model:	các tham số mô hình tạo nên mô hình phù hợp nhất với data
+	best_consensus_set:	điểm dữ liệu được tính toán bằng mô hình này
+	best_error:	các lỗi của mô hình liên quan đến dữ liệu
+
+iterations := 0
+best_model := nil
+best_consensus_set := nil
+best_error := infinity
+while iterations < k 
+    maybe_inliers := n randomly selected values from data
+    maybe_model := model parameters fitted to maybe_inliers
+    consensus_set := maybe_inliers
+
+    for every point in data not in maybe_inliers 
+        if point fits maybe_model with an error smaller than t
+            add point to consensus_set
+    
+    if the number of elements in consensus_set is > d 
+        (this implies that we may have found a good model,
+        now test how good it is)
+        this_model := model parameters fitted to all points in consensus_set
+        this_error := a measure of how well this_model fits these points
+        if this_error < best_error
+            (we have found a model which is better than any of the previous ones,
+            keep it until a better one is found)
+            best_model := this_model
+            best_consensus_set := consensus_set
+            best_error := this_error
+     
+    increment iterations
+
+return best_model, best_consensus_set, best_error
+
+Các tham số của thuật toán:
+giá trị của t và d phải dựa trên các mô hình bài toán cụ thể để xây dựng, nghĩa là phải dựa vào thực tế để xây dựng.
+số lần lặp lại của thuật toán có thể được xác định bằng lý thuyết (k)
+p là sác xuất mà thuật toán lặp đi lặp lại việc lựa chọn các inlier từ dữ liệu vào, nghĩa là xác định n điểm từ dữ liệu ban đầu để ước tính mô hình tham số.
+w là sác xuất của việc lựa chọn một inlier tại mỗi thời điểm một điểm duy nhất được chọn.
+w = số inlier trong dữ liệu / số điểm trong dữ liệu
+bình thường w không được biết trước, nhưng trong một số trường hợp thì có thể được.
+Giả sử rằng cần n điểm để ước lượng một mô hình, w^n là sác xuất của n điểm là inlier và
+1-w^n là sác xuất tối thiểu của một điểm là outlier
+khi đó xác xuất của các điểm không là inlier lặp đi lặp lại k lần của tập các điểm là (1-w^n)^k và nó bằng 1-p
+
+=> 1-p = (1-w^n)^k
+
+k = (log(1-p))/(log(1-w^n))
